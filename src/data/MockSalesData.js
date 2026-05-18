@@ -108,3 +108,15 @@ export const MOCK_SALES_DATA = [
     tipoAvatar: 'iniciales',
   },
 ];
+
+export const DEFAULT_RACE_SETTINGS = {
+  title: 'Carrera de Ventas',
+  subtitle: 'Objetivo del Mes',
+  goalLabel: 'Meta',
+  goalBoxes: 60,
+};
+
+export const DEFAULT_RACE_CONFIG = {
+  settings: DEFAULT_RACE_SETTINGS,
+  sellers: MOCK_SALES_DATA,
+};
