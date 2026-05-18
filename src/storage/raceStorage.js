@@ -18,6 +18,9 @@ function normalizeSeller(seller, index) {
     objetivoCajas: Math.max(1, asNumber(seller?.objetivoCajas, 60)),
     colorAuto: color,
     fotoUrl: seller?.fotoUrl || '',
+    fotoDataUrl: seller?.fotoDataUrl || '',
+    fotoMimeType: seller?.fotoMimeType || '',
+    fotoOriginalName: seller?.fotoOriginalName || '',
     genero: seller?.genero || '',
     tipoAvatar: seller?.tipoAvatar || 'iniciales',
   };

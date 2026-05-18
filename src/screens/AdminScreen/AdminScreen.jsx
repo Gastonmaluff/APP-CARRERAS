@@ -4,6 +4,9 @@ import './AdminScreen.css';
 
 const avatarTypes = ['iniciales', 'foto'];
 const genderOptions = ['', 'masculino', 'femenino', 'otro'];
+const allowedPhotoTypes = ['image/png', 'image/jpeg', 'image/webp'];
+const recommendedPhotoSize = 2 * 1024 * 1024;
+const maxPhotoDimension = 300;
 
 function Field({ label, children }) {
   return (
@@ -16,6 +19,47 @@ function Field({ label, children }) {
 
 function getPublicRaceUrl() {
   return `${window.location.origin}${window.location.pathname.replace(/\/admin\/?$/, '')}/race/`;
+}
+
+function readFileAsDataUrl(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = () => reject(new Error('No se pudo leer la imagen'));
+    reader.readAsDataURL(file);
+  });
+}
+
+function loadImage(dataUrl) {
+  return new Promise((resolve, reject) => {
+    const image = new Image();
+    image.onload = () => resolve(image);
+    image.onerror = () => reject(new Error('No se pudo procesar la imagen'));
+    image.src = dataUrl;
+  });
+}
+
+async function resizeVendorPhoto(file) {
+  const sourceDataUrl = await readFileAsDataUrl(file);
+  const image = await loadImage(sourceDataUrl);
+  const ratio = Math.min(1, maxPhotoDimension / image.width, maxPhotoDimension / image.height);
+  const width = Math.max(1, Math.round(image.width * ratio));
+  const height = Math.max(1, Math.round(image.height * ratio));
+  const canvas = document.createElement('canvas');
+  const context = canvas.getContext('2d');
+  const outputType = file.type === 'image/png' ? 'image/png' : 'image/jpeg';
+
+  canvas.width = width;
+  canvas.height = height;
+  context.clearRect(0, 0, width, height);
+  context.drawImage(image, 0, 0, width, height);
+
+  return {
+    dataUrl: canvas.toDataURL(outputType, 0.84),
+    mimeType: outputType,
+    width,
+    height,
+  };
 }
 
 export default function AdminScreen() {
@@ -37,6 +81,47 @@ export default function AdminScreen() {
     updateSeller(sellerId, {
       [field]: value === '' ? 0 : Number(value),
     });
+  }
+
+  async function handleVendorPhotoUpload(vendorId, file) {
+    if (!file) {
+      return;
+    }
+
+    if (!allowedPhotoTypes.includes(file.type)) {
+      setMessage('Formato no valido. Usar PNG, JPG o WebP.');
+      return;
+    }
+
+    try {
+      const result = await resizeVendorPhoto(file);
+
+      updateSeller(vendorId, {
+        fotoDataUrl: result.dataUrl,
+        fotoMimeType: result.mimeType,
+        fotoOriginalName: file.name,
+        tipoAvatar: 'foto',
+      });
+
+      setMessage(
+        file.size > recommendedPhotoSize
+          ? 'Imagen grande comprimida automaticamente a 300 px'
+          : 'Foto cargada y optimizada',
+      );
+    } catch {
+      setMessage('No se pudo cargar la imagen');
+    }
+  }
+
+  function removeVendorPhoto(vendorId) {
+    updateSeller(vendorId, {
+      fotoDataUrl: '',
+      fotoMimeType: '',
+      fotoOriginalName: '',
+      fotoUrl: '',
+      tipoAvatar: 'iniciales',
+    });
+    setMessage('Foto quitada');
   }
 
   function handleImport() {
@@ -129,7 +214,7 @@ export default function AdminScreen() {
             <span>Objetivo</span>
             <span>Color</span>
             <span>Avatar</span>
-            <span>Foto URL</span>
+            <span>Foto</span>
             <span>Genero</span>
             <span />
           </div>
@@ -185,13 +270,41 @@ export default function AdminScreen() {
                   ))}
                 </select>
               </Field>
-              <Field label="Foto URL">
-                <input
-                  placeholder="https://..."
-                  value={seller.fotoUrl}
-                  onChange={(event) => updateSeller(seller.id, { fotoUrl: event.target.value })}
-                />
-              </Field>
+              <div className="admin-photo-field">
+                <span>Foto</span>
+                <div className="photo-control">
+                  {(seller.fotoDataUrl || seller.fotoUrl) && (
+                    <img
+                      className="photo-control__preview"
+                      src={seller.fotoDataUrl || seller.fotoUrl}
+                      alt=""
+                    />
+                  )}
+                  <div className="photo-control__actions">
+                    <label className="photo-control__upload">
+                      Subir foto
+                      <input
+                        accept="image/png,image/jpeg,image/webp"
+                        type="file"
+                        onChange={(event) => {
+                          handleVendorPhotoUpload(seller.id, event.target.files?.[0]);
+                          event.target.value = '';
+                        }}
+                      />
+                    </label>
+                    {(seller.fotoDataUrl || seller.fotoUrl) && (
+                      <button
+                        className="photo-control__remove"
+                        type="button"
+                        onClick={() => removeVendorPhoto(seller.id)}
+                      >
+                        Quitar
+                      </button>
+                    )}
+                    <small>PNG recomendado</small>
+                  </div>
+                </div>
+              </div>
               <Field label="Genero">
                 <select
                   value={seller.genero}

@@ -11,6 +11,8 @@ function getInitials(name) {
 
 export default function Kart({ seller, isOverGoal }) {
   const initials = getInitials(seller.nombre);
+  const avatarSource = seller.fotoDataUrl || seller.fotoUrl;
+  const avatarMode = seller.fotoDataUrl && seller.fotoMimeType === 'image/png' ? 'contain' : 'cover';
 
   return (
     <div
@@ -23,7 +25,11 @@ export default function Kart({ seller, isOverGoal }) {
         <span />
       </div>
       <div className="kart__avatar">
-        {seller.fotoUrl ? <img src={seller.fotoUrl} alt="" /> : <span>{initials}</span>}
+        {avatarSource ? (
+          <img className={`kart__avatar-image kart__avatar-image--${avatarMode}`} src={avatarSource} alt="" />
+        ) : (
+          <span>{initials}</span>
+        )}
       </div>
       <svg className="kart__car" viewBox="0 0 132 68" role="img" aria-hidden="true">
         <path

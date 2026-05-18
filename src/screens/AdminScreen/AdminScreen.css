@@ -204,6 +204,90 @@
   display: none;
 }
 
+.admin-photo-field {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+
+.admin-photo-field > span {
+  display: none;
+  color: #536879;
+  font-size: 12px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.photo-control {
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+  min-height: 48px;
+}
+
+.photo-control:not(:has(.photo-control__preview)) {
+  grid-template-columns: 1fr;
+}
+
+.photo-control__preview {
+  width: 48px;
+  height: 48px;
+  border: 2px solid #d8e3ea;
+  border-radius: 50%;
+  background: #ffffff;
+  object-fit: contain;
+}
+
+.photo-control__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.photo-control__actions small {
+  width: 100%;
+  color: #6b7f8e;
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.photo-control__upload,
+.photo-control__remove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 30px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.photo-control__upload {
+  background: #1864ff;
+  color: #ffffff;
+}
+
+.photo-control__upload input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+}
+
+.photo-control__remove {
+  background: #ffe3e3;
+  color: #c92a2a;
+}
+
 .color-control {
   display: grid;
   grid-template-columns: 44px 1fr;
@@ -255,6 +339,10 @@
   }
 
   .seller-editor__row .admin-field > span {
+    display: inline;
+  }
+
+  .admin-photo-field > span {
     display: inline;
   }
 
